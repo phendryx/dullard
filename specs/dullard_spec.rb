@@ -26,11 +26,11 @@ describe "dullard," do
     end
 
     it "reads the right number of rows" do
-      @xlsx.sheets[0].row_count.should == 117
+      @xlsx.sheets[0].row_count.should == 118
     end
 
     it "reads the right number of rows from the metadata when present" do
-      @xlsx.sheets[0].rows.size.should == 117
+      @xlsx.sheets[0].rows.size.should == 118
     end
 
     it "reads date/time properly" do
@@ -45,7 +45,17 @@ describe "dullard," do
           row[3].strftime("%Y-%m-%d %H:%M:%S").should == "2012-07-01 21:18:52"
         end
       end
-      count.should == 117
+    end
+
+    it "reads empty cells properly" do
+      count = 0
+      @xlsx.sheets[0].rows.each do |row|
+        count += 1
+
+        if count == 118
+          row.should == ["dataa1", nil, "datac1", "datad1"]
+        end
+      end
     end
   end
 
@@ -67,7 +77,6 @@ describe "dullard," do
           row[4].strftime("%Y-%m-%d %H:%M:%S").should == "2012-07-01 21:18:52"
         end
       end
-      count.should == 117
     end
   end
 end

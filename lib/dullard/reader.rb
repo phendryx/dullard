@@ -191,6 +191,7 @@ class Dullard::Sheet
       row = nil
       column = nil
       cell_type = nil
+      last_column_value_index = nil
       Nokogiri::XML::Reader(@file).each do |node|
         case node.node_type
         when Nokogiri::XML::Reader::TYPE_ELEMENT
@@ -198,6 +199,7 @@ class Dullard::Sheet
           when "row"
             row = []
             column = 0
+            last_column_value_index = nil
             next
           when "c"
             if node.attributes['t'] != 's' && node.attributes['t'] != 'b'
@@ -211,6 +213,7 @@ class Dullard::Sheet
               while column < self.class.column_names.size and rcolumn != self.class.column_names[column]
                 row << nil
                 column += 1
+                last_column_value_index = column
               end
             end
             shared = (node.attribute("t") == "s")
@@ -222,24 +225,33 @@ class Dullard::Sheet
             y << row
             next
           end
-        end
-        value = node.value
+        when Nokogiri::XML::Reader::TYPE_TEXT
+          value = node.value
 
-        if value
-          case cell_type
-            when :datetime
-            when :time
-            when :date
-              value = (DateTime.new(1899,12,30) + value.to_f)
-            when :percentage # ? TODO
-            when :float
-              value = value.to_f
-            else
-              # leave as string
+          if last_column_value_index != nil
+            while (last_column_value_index + 1) != column && (last_column_value_index + 1) < column
+              row << nil
+              last_column_value_index += 1
+            end
           end
-          cell_type = nil
+          last_column_value_index = column
 
-          row << (shared ? string_lookup(value.to_i) : value)
+          if value
+            case cell_type
+              when :datetime
+              when :time
+              when :date
+                value = (DateTime.new(1899,12,30) + value.to_f)
+              when :percentage # ? TODO
+              when :float
+                value = value.to_f
+              else
+                # leave as string
+            end
+            cell_type = nil
+
+            row << (shared ? string_lookup(value.to_i) : value)
+          end
         end
       end
     end
