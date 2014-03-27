@@ -197,6 +197,7 @@ class Dullard::Sheet
             if node.attributes['t'] != 's' && node.attributes['t'] != 'b'
               cell_format_index = node.attributes['s'].to_i
               cell_type = @workbook.format2type(@workbook.attribute2format(cell_format_index))
+              cell_type_column_index = column
             end
 
             rcolumn = node.attributes["r"]
@@ -224,6 +225,11 @@ class Dullard::Sheet
             while (last_column_value_index + 1) != column && (last_column_value_index + 1) < column
               row << nil
               last_column_value_index += 1
+
+              # Only reset cell_type if cell_type_column_index is not the current column 
+              if cell_type_column_index != column
+                cell_type = nil
+              end
             end
           end
           last_column_value_index = column
